@@ -1,0 +1,50 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+    command: bundle exec puma -C config/puma.rb -e production
+
+    volumes:
+      - .:/aws-docker-rails
+      - public-data:/aws-docker-rails/public
+      - tmp-data:/aws-docker-rails/tmp
+      - log-data:/aws-docker-rails/log
+    networks:
+      - aws-docker-rails-network
+    # depends_on:
+    #   - db
+  # db:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: password
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: password
+  #     MYSQL_DATABASE: aws-docker-rails
+  #   volumes:
+  #     - db-data:/var/lib/mysql
+  #   networks:
+  #     - aws-docker-rails-network
+
+  web:
+    build:
+      context: ./nginx_docker
+    volumes:
+      - public-data:/aws-docker-rails/public
+      - tmp-data:/aws-docker-rails/tmp
+    ports:
+      - 80:80
+    depends_on:
+      - app
+    networks:
+      - aws-docker-rails-network
+
+volumes:
+  public-data:
+  tmp-data:
+  log-data:
+  db-data:
+
+networks:
+  aws-docker-rails-network:
+    external: true
